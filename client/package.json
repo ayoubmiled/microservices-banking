@@ -1,0 +1,13 @@
+{
+  "name": "test-client",
+  "version": "1.0.0",
+  "description": "Test client for the Banking Microservices application",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test:rest": "node test-rest.js",
+    "test:graphql": "node test-graphql.js",
+    "test:all": "node index.js"
+  },
+  "dependencies": {}
+}
