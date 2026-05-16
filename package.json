@@ -1,0 +1,20 @@
+{
+  "name": "microservices-banking",
+  "version": "1.0.0",
+  "description": "OurBank - A Simplified Banking Application built with Microservices Architecture (Node.js, gRPC, REST, GraphQL, Kafka)",
+  "private": true,
+  "scripts": {
+    "install:all": "cd services/customer-service && npm install && cd ../../services/account-service && npm install && cd ../../services/notification-service && npm install && cd ../../api-gateway && npm install && cd ../client && npm install",
+    "start:customer": "cd services/customer-service && npm start",
+    "start:account": "cd services/account-service && npm start",
+    "start:notification": "cd services/notification-service && npm start",
+    "start:gateway": "cd api-gateway && npm start",
+    "start:client": "cd client && npm start",
+    "docker:up": "docker-compose up --build",
+    "docker:down": "docker-compose down",
+    "docker:logs": "docker-compose logs -f"
+  },
+  "keywords": ["microservices", "grpc", "kafka", "graphql", "rest", "banking", "nodejs"],
+  "author": "",
+  "license": "MIT"
+}

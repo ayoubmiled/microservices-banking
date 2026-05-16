@@ -1,0 +1,128 @@
+version: '3.8'
+
+services:
+  # ========================
+  # Zookeeper (required by Kafka)
+  # ========================
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.6.0
+    container_name: zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "2181:2181"
+    networks:
+      - banking-network
+
+  # ========================
+  # Kafka Broker
+  # ========================
+  kafka:
+    image: confluentinc/cp-kafka:7.6.0
+    container_name: kafka
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+      - "29092:29092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+    networks:
+      - banking-network
+
+  # ========================
+  # Customer Service (gRPC :50051)
+  # ========================
+  customer-service:
+    build:
+      context: ./services/customer-service
+      dockerfile: Dockerfile
+    container_name: customer-service
+    ports:
+      - "50051:50051"
+    environment:
+      GRPC_PORT: 50051
+      KAFKA_BROKERS: kafka:29092
+      DB_PATH: /app/data/customers.db
+    depends_on:
+      - kafka
+    volumes:
+      - customer-data:/app/data
+    networks:
+      - banking-network
+
+  # ========================
+  # Account Service (gRPC :50052)
+  # ========================
+  account-service:
+    build:
+      context: ./services/account-service
+      dockerfile: Dockerfile
+    container_name: account-service
+    ports:
+      - "50052:50052"
+    environment:
+      GRPC_PORT: 50052
+      KAFKA_BROKERS: kafka:29092
+      DB_PATH: /app/data/accounts.db
+    depends_on:
+      - kafka
+    volumes:
+      - account-data:/app/data
+    networks:
+      - banking-network
+
+  # ========================
+  # Notification Service (gRPC :50053)
+  # ========================
+  notification-service:
+    build:
+      context: ./services/notification-service
+      dockerfile: Dockerfile
+    container_name: notification-service
+    ports:
+      - "50053:50053"
+    environment:
+      GRPC_PORT: 50053
+      KAFKA_BROKERS: kafka:29092
+    depends_on:
+      - kafka
+    networks:
+      - banking-network
+
+  # ========================
+  # API Gateway (HTTP :3000)
+  # ========================
+  api-gateway:
+    build:
+      context: ./api-gateway
+      dockerfile: Dockerfile
+    container_name: api-gateway
+    ports:
+      - "3000:3000"
+    environment:
+      PORT: 3000
+      CUSTOMER_SERVICE_HOST: customer-service:50051
+      ACCOUNT_SERVICE_HOST: account-service:50052
+      NOTIFICATION_SERVICE_HOST: notification-service:50053
+    depends_on:
+      - customer-service
+      - account-service
+      - notification-service
+    networks:
+      - banking-network
+
+volumes:
+  customer-data:
+  account-data:
+
+networks:
+  banking-network:
+    driver: bridge

@@ -1,0 +1,70 @@
+syntax = "proto3";
+
+package notification;
+
+// Notification Service - gRPC interface
+service NotificationService {
+  // Create a new notification
+  rpc CreateNotification (CreateNotificationRequest) returns (NotificationResponse);
+  // Get a notification by ID
+  rpc GetNotification (GetNotificationRequest) returns (NotificationResponse);
+  // List notifications, optionally filtered by customer ID
+  rpc ListNotifications (ListNotificationsRequest) returns (NotificationListResponse);
+  // Mark a notification as read
+  rpc MarkAsRead (MarkAsReadRequest) returns (NotificationResponse);
+  // Delete a notification
+  rpc DeleteNotification (DeleteNotificationRequest) returns (DeleteNotificationResponse);
+}
+
+// Messages for Notification entity
+message Notification {
+  string id = 1;
+  string customer_id = 2;
+  string type = 3; // TRANSACTION, ACCOUNT, CUSTOMER, ALERT
+  string title = 4;
+  string message = 5;
+  bool read = 6;
+  string priority = 7; // LOW, MEDIUM, HIGH, URGENT
+  string created_at = 8;
+}
+
+message CreateNotificationRequest {
+  string customer_id = 1;
+  string type = 2;
+  string title = 3;
+  string message = 4;
+  string priority = 5;
+}
+
+message GetNotificationRequest {
+  string id = 1;
+}
+
+message ListNotificationsRequest {
+  string customer_id = 1; // Optional filter
+  bool unread_only = 2;
+  int32 page = 3;
+  int32 limit = 4;
+}
+
+message MarkAsReadRequest {
+  string id = 1;
+}
+
+message DeleteNotificationRequest {
+  string id = 1;
+}
+
+message DeleteNotificationResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message NotificationResponse {
+  Notification notification = 1;
+}
+
+message NotificationListResponse {
+  repeated Notification notifications = 1;
+  int32 total = 2;
+}
