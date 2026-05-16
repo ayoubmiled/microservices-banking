@@ -1,0 +1,104 @@
+syntax = "proto3";
+
+package account;
+
+// Account Service - gRPC interface
+service AccountService {
+  // Create a new bank account for a customer
+  rpc CreateAccount (CreateAccountRequest) returns (AccountResponse);
+  // Get an account by ID
+  rpc GetAccount (GetAccountRequest) returns (AccountResponse);
+  // List accounts, optionally filtered by customer ID
+  rpc ListAccounts (ListAccountsRequest) returns (AccountListResponse);
+  // Create a transaction (deposit, withdrawal, transfer)
+  rpc CreateTransaction (CreateTransactionRequest) returns (TransactionResponse);
+  // List transactions for a specific account
+  rpc ListTransactions (ListTransactionsRequest) returns (TransactionListResponse);
+  // Get account balance
+  rpc GetBalance (GetBalanceRequest) returns (BalanceResponse);
+}
+
+// Messages for Account entity
+message Account {
+  string id = 1;
+  string customer_id = 2;
+  string account_type = 3; // CHECKING, SAVINGS, BUSINESS
+  double balance = 4;
+  string currency = 5;
+  string status = 6; // ACTIVE, CLOSED, SUSPENDED
+  string created_at = 7;
+  string updated_at = 8;
+}
+
+// Messages for Transaction entity
+message Transaction {
+  string id = 1;
+  string account_id = 2;
+  string transaction_type = 3; // DEPOSIT, WITHDRAWAL, TRANSFER
+  double amount = 4;
+  string currency = 5;
+  string description = 6;
+  string reference_id = 7; // For transfers: destination account
+  string status = 8; // COMPLETED, PENDING, FAILED
+  string created_at = 9;
+}
+
+message CreateAccountRequest {
+  string customer_id = 1;
+  string account_type = 2;
+  string currency = 3;
+  double initial_balance = 4;
+}
+
+message GetAccountRequest {
+  string id = 1;
+}
+
+message ListAccountsRequest {
+  string customer_id = 1; // Optional filter
+  int32 page = 2;
+  int32 limit = 3;
+}
+
+message CreateTransactionRequest {
+  string account_id = 1;
+  string transaction_type = 2;
+  double amount = 3;
+  string currency = 4;
+  string description = 5;
+  string reference_id = 6;
+}
+
+message ListTransactionsRequest {
+  string account_id = 1;
+  int32 page = 2;
+  int32 limit = 3;
+}
+
+message GetBalanceRequest {
+  string account_id = 1;
+}
+
+message AccountResponse {
+  Account account = 1;
+}
+
+message AccountListResponse {
+  repeated Account accounts = 1;
+  int32 total = 2;
+}
+
+message TransactionResponse {
+  Transaction transaction = 1;
+}
+
+message TransactionListResponse {
+  repeated Transaction transactions = 1;
+  int32 total = 2;
+}
+
+message BalanceResponse {
+  string account_id = 1;
+  double balance = 2;
+  string currency = 3;
+}
